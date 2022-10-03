@@ -21,15 +21,22 @@ function make_mtrx(dimentions, list_1, list_2)
 end
 
 
-function get_zeros_non_zeros(mtrx, dims)
+function get_zeros_non_zeros(mtrx, x_dim, y_dim)
   s = 0
-    for i in range(1, dims)
-      for j in range(1, dims)
+    for i in range(1, x_dim)
+      for j in range(1, y_dim)
         if (a[i, j] == 1.0)
           s = s + 1
         end
       end
     end
-    print("Non zeros: $s and zeros: ", dimentions * dimentions - s)
+    print("Non zeros: $s and zeros: ", x_dim * y_dim - s)
   return s
+end
+
+function random_matrix(a, b, x_dim, y_dim)
+  Random.seed!(1234)
+  mtrx = rand(a:b, x_dim, y_dim )
+  print(mtrx)
+  return mtrx
 end
