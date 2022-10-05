@@ -53,6 +53,7 @@ end
 
 
 function reduce_size(a, x, th, n_col_row_to_reduce)
+  using InvertedIndices
   x_dim = size(a, 1)
   y_dim = size(a, 2)
   a_reduced = a[Not(x_dim - n_col_row_to_reduce: end), Not(y_dim - n_col_row_to_reduce : end)]
