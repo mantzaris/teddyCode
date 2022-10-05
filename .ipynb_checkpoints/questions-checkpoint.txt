@@ -1,0 +1,4 @@
+What happens if I raise to an expotential a normalized matrix? Will elements be the same?  We know that the sum of all elements is the same if we raise in 2, 3, 4, .....
+
+
+If we normalize by row or matrix then the sum of each row or column respectively is 1, right?
