@@ -78,3 +78,19 @@ function mae(mtrx, mtrx_reduced)
   println("MAE = ", mae)
   return mae 
   end
+
+function total_error(n_drop_row_col, a_dims, a_down_lim, a_up_lim, x_y_dim, x_down_lim, x_up_lim, th_y_dim, th_down_lim, th_up_lim )
+  mean_average_error = Vector{Float64}()
+  a = initial_matrix(a_dims, a_down_lim, a_up_lim, x_y_dim, x_down_lim, x_up_lim, th_y_dim, th_down_lim, th_up_lim)[1]
+  aj = initial_matrix(a_dims, a_down_lim, a_up_lim, x_y_dim, x_down_lim, x_up_lim, th_y_dim, th_down_lim, th_up_lim)[2]
+  x = initial_matrix(a_dims, a_down_lim, a_up_lim, x_y_dim, x_down_lim, x_up_lim, th_y_dim, th_down_lim, th_up_lim)[3]
+  th = initial_matrix(a_dims, a_down_lim, a_up_lim, x_y_dim, x_down_lim, x_up_lim, th_y_dim, th_down_lim, th_up_lim)[4]
+  Final = initial_matrix(a_dims, a_down_lim, a_up_lim, x_y_dim, x_down_lim, x_up_lim, th_y_dim, th_down_lim, th_up_lim)[5]
+  for i in range(-1, n_drop_row_col)
+   F1 = reduce_size(a, x, th, i)
+   MAE = mae(Final, F1)
+   append!(mean_average_error,MAE)
+  end
+  skip = collect(-1: n_drop_row_col)
+  return mean_average_error, skip
+  end
