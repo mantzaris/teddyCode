@@ -61,3 +61,17 @@ function reduce_size(a, x, th, n_col_row_to_reduce)
   Final_reduced = aj_reduced * x_reduced * th
   return Final_reduced
   end
+
+function mae(mtrx, mtrx_reduced)
+  x = size(mtrx_reduced, 1)
+  y = size(mtrx_reduced, 2)
+  s = 0
+  for i in range(1, x)
+    for j in range(1, y)
+      s = s + abs(mtrx[i, j] - mtrx_reduced[i, j])
+    end
+  end
+  mae = sqrt(s/(x*y))
+  println("MAE = ", mae)
+  return mae 
+  end
