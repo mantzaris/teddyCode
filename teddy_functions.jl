@@ -40,3 +40,13 @@ function random_matrix(a, b, x_dim, y_dim)
   print(mtrx)
   return mtrx
 end
+
+
+function initial_matrix(a_dim, a_down_lim, a_up_lim, x_y_dim, x_down_lim, x_up_lim, th_y_dim, th_down_lim, th_up_lim)
+  a = random_matrix(a_down_lim, a_up_lim, a_dim, a_dim)
+  aj = A2S(a)
+  x = random_matrix(x_down_lim, x_up_lim, a_dim, x_y_dim)
+  th = random_matrix(th_down_lim, th_up_lim, x_y_dim, th_y_dim)
+  Final = aj * x * th
+  return a, aj, x, th, Final
+end
