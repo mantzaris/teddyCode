@@ -53,7 +53,8 @@ end
 
 
 function reduce_size(a, x, th, n_col_row_to_reduce)
-  using InvertedIndices
+  import Pkg; Pkg.add("InvertedIndices") #install InvertedIndices in GoogleColab, you might not need that
+  using InvertedIndices #use this in the begining of the code, importing it here causes a problem in GoogleColab, maybe it's a bug
   x_dim = size(a, 1)
   y_dim = size(a, 2)
   a_reduced = a[Not(x_dim - n_col_row_to_reduce: end), Not(y_dim - n_col_row_to_reduce : end)]
