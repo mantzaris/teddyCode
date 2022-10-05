@@ -55,12 +55,13 @@ end
 function reduce_size(a, x, th, n_col_row_to_reduce)
   x_dim = size(a, 1)
   y_dim = size(a, 2)
-  a_reduced = a[Not([x_dim - n_col_row_to_reduce]), Not([y_dim - n_col_row_to_reduce])]
+  a_reduced = a[Not(x_dim - n_col_row_to_reduce: end), Not(y_dim - n_col_row_to_reduce : end)]
   aj_reduced = A2S(a_reduced)
-  x_reduced = x[Not([x_dim - n_col_row_to_reduce]), :]
+  x_reduced = x[Not(x_dim - n_col_row_to_reduce: end), :]
   Final_reduced = aj_reduced * x_reduced * th
   return Final_reduced
   end
+
 
 function mae(mtrx, mtrx_reduced)
   x = size(mtrx_reduced, 1)
