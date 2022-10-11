@@ -94,3 +94,22 @@ function total_error(n_drop_row_col, a_dims, a_down_lim, a_up_lim, x_y_dim, x_do
   skip = collect(-1: n_drop_row_col)
   return mean_average_error, skip
   end
+
+
+function split_matrix(mtrx, n_lines_to_split)
+  x = size(mtrx, 1)
+  y = size(mtrx, 2)
+  n = div(x, n_lines_to_split)
+  z = 1
+  dictionary = Dict()
+  for i in range(1, n_lines_to_split)
+    dictionary["a_$i"] = mtrx[z: z + n - 1, :]
+    z = z + n
+  end
+  if (mod(x, n_lines_to_split) > 0)
+    k = n_lines_to_split + 1
+    dictionary["a_$k"] = mtrx[z: end, :]
+  end
+  display(dictionary)
+  return dictionary
+  end
