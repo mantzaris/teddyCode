@@ -96,20 +96,22 @@ function total_error(n_drop_row_col, a_dims, a_down_lim, a_up_lim, x_y_dim, x_do
   end
 
 
-function split_matrix(mtrx, n_lines_to_split)
-  x = size(mtrx, 1)
-  y = size(mtrx, 2)
+function split_matrix(a_mtrx, n_lines_to_split)
+  x = size(a_mtrx, 1)
+  y = size(a_mtrx, 2)
   n = div(x, n_lines_to_split)
-  z = 1
   dictionary = Dict()
+  count = 1
+  k = 1
   for i in range(1, n_lines_to_split)
-    dictionary["a_$i"] = mtrx[z: z + n - 1, :]
-    z = z + n
+    z = 1
+    for j in range(1, n_lines_to_split)
+      dictionary["a_$count"] = a_mtrx[k: k + n - 1, z: j*n ]
+      count = count + 1
+      z = z + n
+    end
+    k = k + n
   end
-  if (mod(x, n_lines_to_split) > 0)
-    k = n_lines_to_split + 1
-    dictionary["a_$k"] = mtrx[z: end, :]
-  end
-  display(dictionary)
-  return dictionary
-  end
+  #show(stdout, "text/plain", dictionary["a_7"])
+  return(dictionary)
+end
