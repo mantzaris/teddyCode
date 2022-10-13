@@ -115,3 +115,31 @@ function split_matrix(a_mtrx, n_lines_to_split)
   #show(stdout, "text/plain", dictionary["a_7"])
   return(dictionary)
 end
+
+
+function multiply_splited(a_dim, a_down_lim, a_up_lim, x_y_dim, x_down_lim, x_up_lim, th_y_dim, th_down_lim, th_up_lim, n_lines_to_split)
+  a_mtrx = initial_matrix(a_dim, a_down_lim, a_up_lim, x_y_dim, x_down_lim, x_up_lim, th_y_dim, th_down_lim, th_up_lim)[1]
+  aj_mtrx = initial_matrix(a_dim, a_down_lim, a_up_lim, x_y_dim, x_down_lim, x_up_lim, th_y_dim, th_down_lim, th_up_lim)[2]
+  x_mtrx = initial_matrix(a_dim, a_down_lim, a_up_lim, x_y_dim, x_down_lim, x_up_lim, th_y_dim, th_down_lim, th_up_lim)[3]
+  th_mtrx = initial_matrix(a_dim, a_down_lim, a_up_lim, x_y_dim, x_down_lim, x_up_lim, th_y_dim, th_down_lim, th_up_lim)[4]
+  final_mtrx = initial_matrix(a_dim, a_down_lim, a_up_lim, x_y_dim, x_down_lim, x_up_lim, th_y_dim, th_down_lim, th_up_lim)[5]
+
+  a_splited = split_alpha_matrix(a_mtrx, n_lines_to_split)
+  x_splited = split_x_matrix(x_mtrx, n_lines_to_split)
+  aj_splited = Dict()
+  print("\n")
+  for i in range(1, length(a_splited))
+    aj_splited["aj_$i"] = A2S(a_splited["a_$i"])
+  end
+  print("\n")
+  #show(stdout, "text/plain", aj_splited)
+  final_mtrx_splited = Dict()
+  k = 1
+  while k <= length(a_splited)
+    for i in range(1, length(x_splited))
+      final_mtrx_splited["Fin_$k"] = a_splited["a_$k"] * x_splited["x_$i"] * th
+      k = k + 1
+    end
+  end
+return(final_mtrx_splited)
+end
