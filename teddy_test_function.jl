@@ -40,6 +40,104 @@ end
 
 
 
+#This function splits the adjacency matrix  matrix in smaller matrices which size is (n_lines_to_split x n_lines_to_split). 
+ #adj_mtrx = the adj matrix
+ #n_lines_to_split is the number of rows, columns the small matrix will have.
+ #The function returns a dictionary. Each key element of the dictionary is one of the smaller matrices.
+
+ function split_adj_matrix(adj_mtrx, n_lines_to_split)
+  x = size(adj_mtrx, 1)
+  y = size(adj_mtrx, 2)
+  n = div(x, n_lines_to_split)
+  dictionary = Dict()
+  count = 1
+  k = 1
+  for i in range(1, n_lines_to_split)
+    z = 1
+    for j in range(1, n_lines_to_split)
+      dictionary["a_$count"] = adj_mtrx[k: k + n - 1, z: j*n ]
+      count = count + 1
+      z = z + n
+    end
+    k = k + n
+  end
+  return(dictionary)
+end
+
+
+#This function splits the x matrix in smaller matrices which size is (n_lines_to_split x n_lines_to_split). 
+ #a_mtrx = the a_matrix
+ #n_lines_to_split is the number of rows, columns the small matrix will have.
+ #The function returns a dictionary. Each key element of the dictionary is one of the smaller matrices.
+  
+  function split_x_matrix(x_mtrx, n_lines_to_split)
+  x = size(x_mtrx, 1)
+  n = div(x, n_lines_to_split)
+  #print(n)
+  dictionary = Dict()
+  z = 1
+  for i in range(1, n_lines_to_split)
+    dictionary["x_$i"] = x_mtrx[z : z + n - 1 , 1:end]
+    z = z + n
+  end
+  return(dictionary)
+  end
+
+
+#This matrix turns s_matrix*x_matrix (in dictionary form), to matrix
+#dict = the dictionary we want to convert to matrix
+#x_mtrx = x_matrix
+#n_lines_to_split =  is the number of rows, columns the small matrix will have.
+#It returns the s_matrix*x_matrix in a matrix form
+
+function s_matrix_x_xmtrx_dictionary_to_matrix(dict, x_splited_length, x_mtrx, n_lines_to_split)
+  i = 1 
+  mtrx_reduced_dictionary = Dict()
+  count = 1
+  num = div(size(x_mtrx, 1), n_lines_to_split)
+  while (i <= length(dict)) 
+    x_y_dim = size(x_mtrx, 2)
+    s = zeros(num, x_y_dim)
+    k = 1 
+    while k <= x_splited_length  
+      s = s + dict["aj_x_$i"] 
+      k = k + 1 
+      i = i + 1
+    end 
+  mtrx_reduced_dictionary["A_$count"] = s
+  count = count + 1
+  end 
+  s_ = vcat(mtrx_reduced_dictionary["A_1"])
+  for i in range(2, length(mtrx_reduced_dictionary))
+    aux = vcat(s_, mtrx_reduced_dictionary["A_$i"])
+    s_ = aux
+  end
+  return s_ 
+end
+
+function multiply_splited_2(a_mtrx, x_mtrx, th_mtrx, n_lines_to_split)
+  k = 3
+  a_splited = split_adj_matrix(a_mtrx, n_lines_to_split)
+  x_splited = split_x_matrix(x_mtrx, n_lines_to_split)
+  #x_y_dim = size(x_mtrx, 2)
+  aj_splited = Dict()
+  for i in range(1, length(a_splited))
+    aj_splited["aj_$i"] = A2S(a_splited["a_$i"])
+  end
+  aj_x = Dict()
+  k = 1
+  while k <= length(a_splited)
+    for i in range(1, length(x_splited))
+      aj_x["aj_x_$k"] = aj_splited["aj_$k"]^3 * x_splited["x_$i"] 
+      k = k + 1
+    end
+  end
+  aj_x_mtrx = s_matrix_x_xmtrx_dictionary_to_matrix(aj_x, length(x_splited), x_mtrx, n_lines_to_split)'
+  final = (th_mtrx * aj_x_mtrx )
+  return(onecold(final))
+end
+
+
 #adj_matrix = adjacency matrix
 #x_matrix = x matrix
 #y_matrix = y matrix (actual data)
@@ -58,11 +156,19 @@ function my_function(adj_matrix, x_matrix, y_matrix, parameter)
   weight = resDict["model"].layers[1].weight
   accuracy = round(mean( onecold( model(train_x), [1, 2] ) .== onecold(train_y, [1, 2]) ) * 100, digits = 2)
   println("Accuracy by training all data: ", accuracy, "%", ", k = $k")  
-  #test = weight * SX
-  #SX_TH = onecold(test, [1, 2])
+  test = weight * SX
+  SX_TH = onecold(test, [1, 2])
+  #show(stdout, "text/plain", SX_TH ) 
   if parameter == 1
     skiped = round(size(adj_matrix, 1) * 0.25, digits = 0)
-    f_reduced = reduce_size(adj_matrix ,x_matrix, weight, skiped)
+    final_matrix = reduce_size(adj_matrix ,x_matrix, weight, skiped)
+  elseif parameter == 2
+    final_matrix = multiply_splited_2(adj_mtrx, x_mtrx, weight_mtrx, 2)
   end 
-  return f_reduced
+  if final_matrix == SX_TH
+    println("Same")
+  else
+    println("different")
+  end 
+  return(final_matrix)
 end 
