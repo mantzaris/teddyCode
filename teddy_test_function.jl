@@ -1,4 +1,14 @@
-######################################################## building the my_function file ########################################################
+#This function gets the divisors of a number
+function get_divisors(number)
+  divisors = Vector{Float64}()
+  for i in range(1, div(number, 2))
+    if number % i == 0
+      append!(divisors, Int(i))
+    end
+  end
+  append!(divisors, Int(number))
+  return divisors
+end
 
 ##This function reduces the size of a matrix by throughing the last n_col_row_to_reduce rows-columns
 #adj = aj matrix
@@ -146,29 +156,64 @@ end
 function my_function(adj_matrix, x_matrix, y_matrix, parameter)
   #get Y' data by training the network, before seting the parameter
   k = 3
-  yhot = onehotbatch(y_matrix, [1, 2])
+  yhot = onehotbatch(vec(y_matrix), [1, 2])
   S = A2S(adj_matrix)
   SX = S^k * x_matrix
   SX = SX'   
   train_x = SX
   train_y = yhot
-  model, resDict = load_and_train_model(SX, yhot)
-  weight = resDict["model"].layers[1].weight
-  accuracy = round(mean( onecold( model(train_x), [1, 2] ) .== onecold(train_y, [1, 2]) ) * 100, digits = 2)
-  println("Accuracy by training all data: ", accuracy, "%", ", k = $k")  
-  test = weight * SX
-  SX_TH = onecold(test, [1, 2])
   #show(stdout, "text/plain", SX_TH ) 
   if parameter == 1
+    yhot = onehotbatch(vec(y_matrix), [1, 2])
+    S = A2S(adj_matrix)
+    SX = S^k * x_matrix
+    SX = SX'   
+    train_x = SX
+    train_y = yhot
+    model, resDict = load_and_train_model(SX, yhot)
+    weight = resDict["model"].layers[1].weight
+    accuracy = round(mean( onecold( model(train_x), [1, 2] ) .== onecold(train_y, [1, 2]) ) * 100, digits = 2)
+    println("Accuracy by training all data: ", accuracy, "%", ", k = $k")  
+    test = weight * SX
+    SX_TH = onecold(test, [1, 2])
     skiped = round(size(adj_matrix, 1) * 0.25, digits = 0)
     final_matrix = reduce_size(adj_matrix ,x_matrix, weight, skiped)
   elseif parameter == 2
-    final_matrix = multiply_splited_2(adj_mtrx, x_mtrx, weight_mtrx, 2)
-  end 
-  if final_matrix == SX_TH
-    println("Same")
-  else
-    println("different")
+    yhot = onehotbatch(vec(y_matrix), [1, 2])
+    S = A2S(adj_matrix)
+    SX = S^k * x_matrix
+    SX = SX'   
+    train_x = SX
+    train_y = yhot
+    model, resDict = load_and_train_model(SX, yhot)
+    weight = resDict["model"].layers[1].weight
+    accuracy = round(mean( onecold( model(train_x), [1, 2] ) .== onecold(train_y, [1, 2]) ) * 100, digits = 2)
+    println("Accuracy by training all data: ", accuracy, "%", ", k = $k")  
+    test = weight * SX
+    SX_TH = onecold(test, [1, 2])
+    n_lines_to_split = get_divisors(size(adj_matrix, 2))[2]
+    final_matrix = multiply_splited_2(adj_matrix, x_mtrx, weight_mtrx, Int(n_lines_to_split))
+  elseif parameter == 3 
+    for i in range(1, Int(size(adj_matrix, 1) * 0.1))
+      random_number = rand(1: size(adj_matrix, 1))
+      adj_matrix = adj_matrix[1:end .!= random_number, 1:end .!= random_number]
+      x_matrix = x_matrix[1:end .!= random_number, 1:end]
+      y_matrix = y_matrix[1:end .!= random_number, 1:end]
+  end
+    yhot = onehotbatch(vec(y_matrix), [1, 2])
+    S = A2S(adj_matrix)
+    SX = S^k * x_matrix
+    SX = SX'   
+    train_x = SX
+    train_y = yhot
+    model, resDict = load_and_train_model(SX, yhot)
+    weight = resDict["model"].layers[1].weight
+    accuracy = round(mean( onecold( model(train_x), [1, 2] ) .== onecold(train_y, [1, 2]) ) * 100, digits = 2)
+    println("Accuracy by training all data: ", accuracy, "%", ", k = $k")
+    println("SX: ", size(SX))
+    println("weight: ", size(weight))
+    final_matrix_aux = weight * SX 
+    final_matrix = onecold(final_matrix_aux)
   end 
   return(final_matrix)
 end 
