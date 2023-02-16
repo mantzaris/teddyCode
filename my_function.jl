@@ -255,25 +255,16 @@ end
     if parameter == 1
       skiped = round(size(adj_matrix, 1) * 0.25, digits = 0)
       SX_reduced, y_reduced = reduce_size(adj_matrix ,x_matrix, y_matrix, skiped)
-      #println("SX_reduced: ", size(SX_reduced))
-      #println("y_reduced: ", size(y_reduced'))
       train_x, test_x, train_y, test_y = split_train_test(SX_reduced , y_reduced, 0.7)
       train_x = train_x'
       test_x = test_x'  
       yhot = onehotbatch(vec(train_y), [1, 2]) 
       train_y = yhot
       test_y = onehotbatch(vec(test_y), [1, 2])
-      #println("train_x: ", size(train_x))
-      #println("train_y: ", size(train_y))
-      #println("test_x: ", size(test_x))
-      #println("test_y: ", size(test_y))
       model, resDict, epochs, loss = load_and_train_model(train_x, train_y)
       weight = resDict["model"].layers[1].weight
       accuracy = round(mean( onecold( model(test_x), [1, 2] ) .== onecold(test_y, [1, 2]) ) * 100, digits = 2)
       println("Accuracy by training tested data: ", accuracy, "%", ", k = $k")
-      #println("weight: ", size(weight))
-      #println("SX = ", size(SX))
-      #println("weight = ", size(weight))
       #Get the predicted values by using SX matrix and our model
       pred_by_model = onecold(model(SX'), [1, 2])
       #Get the predicted values by using the weight matrix
@@ -294,10 +285,6 @@ end
         yhot = onehotbatch(vec(train_y), [1, 2]) 
         train_y = yhot
         test_y = onehotbatch(vec(test_y), [1, 2])
-        #println("train_x: ", size(train_x))
-        #println("train_y: ", size(train_y))
-        #println("test_x: ", size(test_x))
-        #println("test_y: ", size(test_y)) 
         model, resDict, epochs, loss = load_and_train_model(train_x, train_y)
         weight = resDict["model"].layers[1].weight
         accuracy = round(mean( onecold( model(test_x), [1, 2] ) .== onecold(test_y, [1, 2]) ) * 100, digits = 2)
@@ -325,7 +312,6 @@ end
       accuracy = round(mean( onecold( model(test_x), [1, 2] ) .== onecold(test_y, [1, 2]) ) * 100, digits = 2)
       println("Accuracy by training tested data: ", accuracy, "%", ", k = $k")
       final = SX_reduced * weight'
-
       pred_by_model = onecold(model(SX'), [1, 2])
       #Get the predicted values by using the weight matrix
       SX_x_weight = SX * weight'
