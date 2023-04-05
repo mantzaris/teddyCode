@@ -12,7 +12,7 @@ using Random
 using InvertedIndices
 using MLDatasets: Cora
 
-##################################################### generate data to test the my_function ######################################################
+############################################## generate data to test the my_function ##############################################
 
 
 #convert adj to S marix
@@ -95,11 +95,11 @@ function AdjMat_XMat_YMat()
 end 
 
  adj_matrix, x_matrix, y_matrix  = AdjMat_XMat_YMat();
+ ###########################################################################################################################################
  
- ##################################################################################################################################################
- #################################################### Functions used when parameter = 1 ####################################################
+ #################################################### Functions used when parameter = 1 ###################################################
   
-#parameter = 1 means that: We drop the last n rows and columns of the adjacency matrix. Then the new S matrix is calculated. Same number of rows from x matrix and Y matrix are also dropped.
+  #parameter = 1 means that: We drop the last n rows and columns of the adjacency matrix. Then the new S matrix is calculated. Same number of rows from x matrix and Y matrix are also dropped.
   
   
   ##This function reduces the size of a matrix by dropping the last n_col_row_to_reduce rows-columns. 
@@ -222,8 +222,9 @@ function load_and_train_model_one_shot_learining(SX_mtrx, x_matrix, y_matrix)
   println("Acuuracy from testing data: ", round(resDict["testing"] * 100, digits = 4), "%")
   check_accuracy(y_matrix, predicted_mtrx)
 end 
+###########################################################################################################################################
 
- ################################################################## my_function ##################################################################
+ ########################################################## my_function modified ##########################################################
 
   #adj_matrix = adjacency matrix
   #x_matrix = x matrix
@@ -250,11 +251,10 @@ end
     end 
   #return  accuracy, epochs, loss, predicted_mtrx
 end 
-
-##################################################################################################################################################
-########################################################### Apply the function to data ###########################################################
+###########################################################################################################################################
 
 for i in 1:3
     my_function(adj_matrix, x_matrix, y_matrix, i)
     println("*" * repeat("-", 100))
   end
+###########################################################################################################################################
