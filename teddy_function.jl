@@ -1,22 +1,8 @@
-using Plots
-using Distributions
-using StatsBase
-using InvertedIndices
-using Flux 
-using OneHotArrays
-using Graphs
-using GraphPlot
-using Distributions
-using LinearAlgebra
-using Random 
-using InvertedIndices
-using MLDatasets: Cora
-
 ############################################## generate data to test the my_function ##############################################
 
 
 #convert adj to S marix
-  function A2S(AdjMat)
+function A2S(AdjMat)
     AdjMat += I #add the identity to the diagonal, add self-loops
     diag = Diagonal(vec(sum(AdjMat,dims=2) .^ (-1/2)))
     return (diag) * AdjMat * (diag) #return the normalized S matrix
@@ -132,6 +118,7 @@ function check_accuracy(Ydata, Ydata_predicted)
   end 
   accuracy = round(s/length(Ydata_predicted), digits = 2)
   println("Accyracy to get Ydata, using parameter matrix and SX i.e. (SX * parameter_matrix): ", accuracy * 100, "%")
+  return accuracy
   end  
 
 
@@ -184,7 +171,7 @@ end
 #x_matrix = The X matrix
 #y_matrix = The Y matrix (the Ydata)
 function load_and_train_model_one_shot_learining(SX_mtrx, x_matrix, y_matrix)
-  Random.seed!(2)
+  #Random.seed!(201)
   testing_perc = 0.4
   targets = collect(1:2) #length(unique(y_matrix)) #collect(1:2) #2 = length(unique(y_matrix))
   error_dict = Dict()
@@ -216,45 +203,107 @@ function load_and_train_model_one_shot_learining(SX_mtrx, x_matrix, y_matrix)
   resDict["testing"]  = mean( onecold( modelSGC(SX_mtrx')[:,testInds], targets) .== y_matrix[testInds] )
   resDict["model"] = modelSGC
   weight = resDict["model"].layers[1].weight
-  SX_weigth = SX_mtrx * weight'
-  predicted_mtrx = onecold( SX_weigth' )
+  #SX_weigth = SX_mtrx * weight'
+  #predicted_mtrx = onecold( SX_weigth' )
   println("Acuuracy from training data: ", round(resDict["training"] * 100, digits = 4), "%")
   println("Acuuracy from testing data: ", round(resDict["testing"] * 100, digits = 4), "%")
-  check_accuracy(y_matrix, predicted_mtrx)
+  #acc = check_accuracy(y_matrix, predicted_mtrx)
+  return round(resDict["training"] * 100, digits = 4), round(resDict["testing"] * 100, digits = 4), weight
+end
+
+
+
+function average_the_parameters(adj_mtrx, x_mtrx, y_mtrx, method)
+    k = 3
+    SX_mtrx = A2S(adj_mtrx)^k * x_mtrx
+    weight_dict = Dict()
+    m = 1
+  if method == 1
+    for i in [0.38, 0.4]
+      Random.seed!(6)
+      skiped = round(size(adj_mtrx, 1) * i , digits = 0)
+      SX_reduced_new, y_reduced_new, x_reduced_new = reduce_size(adj_mtrx, x_mtrx, y_mtrx, skiped)
+      y_reduced_new = vec(y_reduced_new)
+      train, test, weight_new = load_and_train_model_one_shot_learining(SX_reduced_new, x_reduced_new, y_reduced_new)
+      weight_dict["w_$m"] = weight_new
+      m += 1 
+    end
+      weight_sum = zeros(size(weight_dict["w_1"], 1), size(weight_dict["w_1"], 2))
+      for i in range(1, length(weight_dict))
+        weight_sum +=  weight_dict["w_$i"]
+      end 
+      weight_average_matrix = weight_sum / length(weight_dict)
+      SX_weigth_new = SX_mtrx * weight_average_matrix'
+      predicted_mtrx_new = onecold( SX_weigth_new')
+      acc = check_accuracy(y_mtrx, predicted_mtrx_new)
+    elseif method == 3
+      for i in [0.23, 0.24]
+      Random.seed!(1)
+      skiped = round(size(adj_mtrx, 1) * i , digits = 0)
+      SX_reduced_new, y_reduced_new, x_reduced_new = to_drop(adj_mtrx, x_mtrx, y_mtrx, skiped)
+      y_reduced_new = vec(y_reduced_new)
+      train, test, weight_new = load_and_train_model_one_shot_learining(SX_reduced_new, x_reduced_new, y_reduced_new)
+      weight_dict["w_$m"] = weight_new
+      m += 1 
+    end
+      weight_sum = zeros(size(weight_dict["w_1"], 1), size(weight_dict["w_1"], 2))
+      for i in range(1, length(weight_dict))
+        weight_sum +=  weight_dict["w_$i"]
+      end 
+      weight_average_matrix = weight_sum / length(weight_dict)
+      SX_weigth_new = SX_mtrx * weight_average_matrix'
+      predicted_mtrx_new = onecold( SX_weigth_new')
+      acc = check_accuracy(y_mtrx, predicted_mtrx_new)
+  end 
 end 
-###########################################################################################################################################
 
- ########################################################## my_function modified ##########################################################
-
-  #adj_matrix = adjacency matrix
-  #x_matrix = x matrix
-  #y_matrix = y matrix (actual data)
-  #paremeter = says which method will be used to split the adj_matrix 
-  
-  function my_function(adj_matrix, x_matrix, y_matrix, parameter)
+function my_function(adj_mtrx, x_mtrx, y_mtrx, parameter)
+    k = 3
+    SX_mtrx = A2S(adj_mtrx)^k * x_mtrx
+    weight_dict = Dict()
     if parameter == 1
-      a = 0.4 #droping the a% of the matrix
-      skiped = round(size(adj_matrix, 1) * a , digits = 0)
-      SX_reduced, y_reduced, x_reduced = reduce_size(adj_matrix ,x_matrix, y_matrix, skiped)
+      Random.seed!(6)
+      a = 0.39 #droping the a% of the matrix
+      skiped = round(size(adj_mtrx, 1) * a , digits = 0)
+      SX_reduced, y_reduced, x_reduced = reduce_size(adj_mtrx, x_mtrx, y_mtrx, skiped)
       y_reduced = vec(y_reduced)
-      load_and_train_model_one_shot_learining(SX_reduced, x_reduced, y_reduced)
+      train, test, weight = load_and_train_model_one_shot_learining(SX_reduced, x_reduced, y_reduced)
+      SX_weigth = SX_mtrx * weight'
+      predicted_mtrx = onecold( SX_weigth' )
+      acc = check_accuracy(y_mtrx, predicted_mtrx)
+      println(repeat("-", 100))
+      average_the_parameters(adj_mtrx, x_mtrx, y_mtrx, parameter)
+      println(repeat("-", 100))
     elseif parameter == 2 
-      SX_reduced, y_reduced, x_reduced = radomly_reduced_matrix(adj_matrix ,x_matrix, y_matrix, 0.4 ); 
+      m = 1 # this variable is used to asign values in the weight dictionary
+      Random.seed!(58)
+      a = 0.47
+      SX_reduced, y_reduced, x_reduced = radomly_reduced_matrix(adj_matrix ,x_matrix, y_matrix, 0.47 ); 
       y_reduced = vec(y_reduced)
-      load_and_train_model_one_shot_learining(SX_reduced, x_reduced, y_reduced)
+      train, test, weight = load_and_train_model_one_shot_learining(SX_reduced, x_reduced, y_reduced)
+      SX_weigth = SX_mtrx * weight'
+      predicted_mtrx = onecold( SX_weigth' )
+      acc = check_accuracy(y_mtrx, predicted_mtrx)
     elseif parameter == 3
-      a = 0.25 #droping the a% of the matrix 0.25
+      Random.seed!(2)
+      a = 0.26 #droping the a% of the matrix 0.25
       skiped = round(size(adj_matrix, 1) * a , digits = 0)
       SX_reduced, y_reduced, x_reduced= to_drop(adj_matrix, x_matrix, y_matrix, skiped)
       y_reduced = vec(y_reduced)
-      load_and_train_model_one_shot_learining(SX_reduced, x_reduced, y_reduced)
+      train, test, weight  = load_and_train_model_one_shot_learining(SX_reduced, x_reduced, y_reduced)
+      SX_weigth = SX_mtrx * weight'
+      predicted_mtrx = onecold( SX_weigth' )
+      acc = check_accuracy(y_mtrx, predicted_mtrx)
+      println(repeat("-", 100))
+      average_the_parameters(adj_mtrx, x_mtrx, y_mtrx, parameter)
+      println(repeat("-", 100))
     end 
-  #return  accuracy, epochs, loss, predicted_mtrx
+  #return  train, test, weight
 end 
-###########################################################################################################################################
+
+
 
 for i in 1:3
-    my_function(adj_matrix, x_matrix, y_matrix, i)
-    println("*" * repeat("-", 100))
-  end
-###########################################################################################################################################
+    my_function(adj_matrix, x_matrix, y_matrix, i);
+    println(repeat("*", 100))
+  end 
